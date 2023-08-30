@@ -1,0 +1,82 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+
+.root-component-honyaku-draggable {
+  position: fixed;
+  right: 100px;
+  bottom: 100px;
+  height: 75px;
+  width: 75px;
+  z-index: 10000;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+#app {
+  font-family: Avenir, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: center;
+  color: #2c3e50;
+  margin-top: 60px;
+}
+
+.floating-button:hover {
+  opacity: 1.0;
+}
+
+@keyframes underlineOpacity {
+  0%, 100% {
+    text-decoration: underline rgba(76, 0, 130, 0);
+  }
+  50% {
+    text-decoration: underline indigo;
+  }
+}
+
+.original-text-value {
+  animation: underlineOpacity 3s ease-in-out;
+}
+
+.original-text-value:hover {
+  text-decoration: underline indigo;
+}
+
+.translated-text {
+  color: aliceblue;
+  margin: 5px;
+}
+
+.translation-wrapper {
+  position: fixed;
+  font-size: x-small;
+  display: none; /* Hide the wrapper by default */
+  flex-direction: column;
+  opacity: 1; /* Start with 0 opacity */
+  transition: opacity 0.3s ease-in-out;
+  z-index: 10000;
+  background-color: rgba(76, 0, 130, 0.8);
+
+  /* always bottom center */
+  /* bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%); */
+}
+
+.original-text-container:hover .translation-wrapper {
+  display: flex; /* Show the wrapper on hover */
+}
