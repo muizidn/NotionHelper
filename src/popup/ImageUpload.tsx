@@ -4,9 +4,16 @@ import { SupabaseClient, createClient } from "@supabase/supabase-js";
 import CopyToClipboard from "./CopyToClipboard";
 import imageCompression from "browser-image-compression";
 import { createStandaloneToast } from "@chakra-ui/toast";
-import { Box, Text, Button, Input } from "@chakra-ui/react";
+import {
+  Box,
+  Text,
+  Button,
+  Input,
+  FormControl,
+  FormLabel,
+} from "@chakra-ui/react";
 import imageRepo, { DbImage } from "../repo/image";
-import { UUID } from 'uuidjs'
+import { UUID } from "uuidjs";
 
 const { ToastContainer, toast } = createStandaloneToast();
 
@@ -15,7 +22,7 @@ const ImageUpload: React.FC = () => {
   const supabaseKey = localStorage.getItem("supabaseKey");
 
   return (
-    <Box w="800px" maxW="md" mx="auto" p={4} bg="red" rounded="lg" shadow="md">
+    <Box w="800px" maxW="md" mx="auto" p={4} rounded="lg" shadow="md">
       <Text fontSize="xl" fontWeight="semibold" mb={4}>
         Image Upload
       </Text>
@@ -58,6 +65,7 @@ const _ImageUpload: React.FC<_ImageUploadProps> = ({
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [publicUrl, setPublicUrl] = useState<string | null>(null);
+  const [fileName, setFileName] = useState<string>('');
   const [fileSize, setFileSize] = useState<string | null>(null);
   const [compressedFileSize, setCompressedFileSize] = useState<string | null>(
     null
@@ -66,11 +74,16 @@ const _ImageUpload: React.FC<_ImageUploadProps> = ({
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
       setFile(event.target.files[0]);
+      setFileName(event.target.files[0].name);
     }
   };
 
+  const handleFileNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFileName(e.target.value);
+  };
+
   const handleUpload = async () => {
-    if (!file || !supabase) return;
+    if (!file || !supabase || fileName.trim() === '') return;
 
     setUploading(true);
     setUploadError(null);
@@ -88,7 +101,7 @@ const _ImageUpload: React.FC<_ImageUploadProps> = ({
       `Compressed File Size ${compressedFile.size / 1024} KB`
     );
 
-    const fileNameUpdated = `${file.name}-automatic`;
+    const fileNameUpdated = `${fileName}`;
 
     const { data, error } = await supabase.storage
       .from(supabaseBucket)
@@ -103,7 +116,7 @@ const _ImageUpload: React.FC<_ImageUploadProps> = ({
         id: UUID.genV4().toString(),
         imageUrl: d.data.publicUrl,
         size: compressedFile.size,
-        name: "image x 2",
+        name: fileName,
         pageId: "fooz",
       });
 
@@ -149,6 +162,7 @@ const _ImageUpload: React.FC<_ImageUploadProps> = ({
 
     if (files.length > 0) {
       setFile(files[0]);
+      setFileName(files[0].name);
     }
   };
 
@@ -180,41 +194,40 @@ const _ImageUpload: React.FC<_ImageUploadProps> = ({
         onChange={handleFileChange}
         className="hidden"
       />
-      <>
-        {supabase ? (
-          <>
-            <div className="mb-4">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                className="border p-2"
-              />
-            </div>
-            <button
-              onClick={handleUpload}
-              className="bg-blue-500 text-white px-4 py-2 rounded-md"
-              disabled={!file || uploading}
-            >
-              {uploading ? "Uploading..." : "Upload"}
-            </button>
-            {uploadError && <p className="text-red-500 mt-2">{uploadError}</p>}
-            {publicUrl && (
-              <div>
-                <p className="text-green-500 mt-2">Upload successful!</p>
-                {fileSize && <p className="text-green-500 mt-2">{fileSize}</p>}
-                {compressedFileSize && (
-                  <p className="text-green-500 mt-2">{compressedFileSize}</p>
-                )}
-                <CopyToClipboard>{publicUrl}</CopyToClipboard>
-              </div>
-            )}
-          </>
-        ) : (
-          <p className="text-red-500 mt-2">Fix Supabase URL and key instead.</p>
-        )}
-        <ToastContainer />
-      </>
+      <FormControl isRequired>
+        <FormLabel htmlFor="fileName">File Name:</FormLabel>
+        <Input
+          type="text"
+          id="fileName"
+          value={fileName}
+          onChange={handleFileNameChange}
+          placeholder="Enter a file name"
+        />
+      </FormControl>
+      <Button
+        mt={4}
+        type="submit"
+        colorScheme="teal"
+        onClick={handleUpload}
+        disabled={!file || uploading || fileName.trim() === ""}
+      >
+        {uploading ? "Uploading..." : "Upload"}
+      </Button>
+      {uploadError && <Text color="red.500">{uploadError}</Text>}
+      {publicUrl && (
+        <div>
+          <Text color="green.500">Upload successful!</Text>
+          {fileSize && <Text color="green.500">{fileSize}</Text>}
+          {compressedFileSize && (
+            <Text color="green.500">{compressedFileSize}</Text>
+          )}
+          <CopyToClipboard>{publicUrl}</CopyToClipboard>
+        </div>
+      )}
+      {!supabase && (
+        <Text color="red.500 mt-2">Fix Supabase URL and key instead.</Text>
+      )}
+      <ToastContainer />
     </Box>
   );
 };
