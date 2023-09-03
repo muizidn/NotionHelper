@@ -51,7 +51,7 @@ export default function App() {
           </ul>
         </nav>
       </div>
-      <div id="detail" className="bg-blue-400">
+      <div id="detail" className="w-full p-4">
         <Outlet />
       </div>
     </div>
