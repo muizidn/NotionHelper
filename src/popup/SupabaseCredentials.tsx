@@ -7,18 +7,42 @@ const SupabaseCredential: React.FC = () => {
   const [supabaseFolder, setSupabaseFolder] = useState("");
 
   useEffect(() => {
-    const savedSupabaseUrl = import.meta.env.VITE_SUPABASE_URL || localStorage.getItem("supabaseUrl");
-    const savedSupabaseKey = import.meta.env.VITE_SUPABASE_KEY || localStorage.getItem("supabaseKey");
-    const savedSupabaseBucket = import.meta.env.VITE_SUPABASE_BUCKET ||  localStorage.getItem("supabaseBucket");
-    const savedSupabaseFolder = import.meta.env.VITE_SUPABASE_FOLDER ||  localStorage.getItem("supabaseFolder");
+    const env = import.meta.env;
+    const localStorageKeyMap = {
+      supabaseUrl: env.VITE_SUPABASE_URL,
+      supabaseKey: env.VITE_SUPABASE_KEY,
+      supabaseBucket: env.VITE_SUPABASE_BUCKET,
+      supabaseFolder: env.VITE_SUPABASE_FOLDER,
+    };
 
-    if (savedSupabaseUrl) setSupabaseUrl(savedSupabaseUrl);
-    if (savedSupabaseKey) setSupabaseKey(savedSupabaseKey);
-    if (savedSupabaseBucket) setSupabaseBucket(savedSupabaseBucket);
-    if (savedSupabaseFolder) setSupabaseFolder(savedSupabaseFolder);
+    Object.entries(localStorageKeyMap).forEach(([key, value]) => {
+      const localStorageValue = localStorage.getItem(key);
+      if (value) {
+        localStorageValue && localStorage.setItem(key, value);
+        switch (key) {
+          case "supabaseUrl":
+            setSupabaseUrl(value);
+            break;
+          case "supabaseKey":
+            setSupabaseKey(value);
+            break;
+          case "supabaseBucket":
+            setSupabaseBucket(value);
+            break;
+          case "supabaseFolder":
+            setSupabaseFolder(value);
+            break;
+          default:
+            break;
+        }
+      }
+    });
   }, []);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, field: string) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    field: string
+  ) => {
     const value = e.target.value;
     if (field === "supabaseUrl") {
       setSupabaseUrl(value);
