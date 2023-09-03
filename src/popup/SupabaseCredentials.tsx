@@ -36,7 +36,7 @@ const SupabaseCredential: React.FC = () => {
   };
 
   return (
-    <div className="w-[800px] max-w-md mx-auto p-4 bg-white rounded-lg shadow-md">
+    <div className="w-[800px] h-[800px] max-w-md mx-auto p-4 bg-white rounded-lg">
       <h2 className="text-2xl font-semibold mb-4">Supabase Credentials</h2>
       <div className="mb-4">
         <label className="block mb-2">Supabase URL:</label>

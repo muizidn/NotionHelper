@@ -18,7 +18,7 @@ const ImageUpload: React.FC = () => {
       maxW="md"
       mx="auto"
       p={4}
-      bg="white"
+      bg="red"
       rounded="lg"
       shadow="md"
     >

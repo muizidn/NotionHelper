@@ -3,10 +3,10 @@ import { Link, Outlet } from "react-router-dom";
 
 export default function App() {
   return (
-    <div className="flex w-[700px]">
+    <div className="flex w-[700px] h-[800px]">
       <div className="w-[30%] flex flex-col items-center h-screen bg-gray-100">
         <div className="bg-blue-500 text-white p-4">
-          <h1 className="text-2xl font-bold">React Router Contacts</h1>
+          <h1 className="text-2xl font-bold">Upload Image to Supabase</h1>
         </div>
         <div className="my-4 px-4">
           <form id="search-form" role="search" className="flex items-center">
@@ -48,7 +48,7 @@ export default function App() {
           </ul>
         </nav>
       </div>
-      <div id="detail">
+      <div id="detail" className="bg-blue-400">
         <Outlet />
       </div>
     </div>
