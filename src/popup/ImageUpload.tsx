@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useState } from "react";
 import { SupabaseClient, createClient } from "@supabase/supabase-js";
 import CopyToClipboard from "./CopyToClipboard";
@@ -14,6 +14,7 @@ import {
 } from "@chakra-ui/react";
 import imageRepo, { DbImage } from "../repo/image";
 import { UUID } from "uuidjs";
+import getHostInfo, { HostInfo } from "../getHostInfo";
 
 const { ToastContainer, toast } = createStandaloneToast();
 
@@ -65,8 +66,9 @@ const _ImageUpload: React.FC<_ImageUploadProps> = ({
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [publicUrl, setPublicUrl] = useState<string | null>(null);
-  const [fileName, setFileName] = useState<string>('');
+  const [fileName, setFileName] = useState<string>("");
   const [fileSize, setFileSize] = useState<string | null>(null);
+  const [pageId, setPageId] = useState<string>('');
   const [compressedFileSize, setCompressedFileSize] = useState<string | null>(
     null
   );
@@ -83,7 +85,7 @@ const _ImageUpload: React.FC<_ImageUploadProps> = ({
   };
 
   const handleUpload = async () => {
-    if (!file || !supabase || fileName.trim() === '') return;
+    if (!file || !supabase || fileName.trim() === "") return;
 
     setUploading(true);
     setUploadError(null);
@@ -105,7 +107,7 @@ const _ImageUpload: React.FC<_ImageUploadProps> = ({
 
     const { data, error } = await supabase.storage
       .from(supabaseBucket)
-      .upload(`${supabaseFolder}/${fileNameUpdated}`, compressedFile);
+      .upload(`${supabaseFolder}/${pageId}/${fileNameUpdated}`, compressedFile);
 
     if (error) {
       setUploadError("Error uploading image");
@@ -117,7 +119,7 @@ const _ImageUpload: React.FC<_ImageUploadProps> = ({
         imageUrl: d.data.publicUrl,
         size: compressedFile.size,
         name: fileName,
-        pageId: "fooz",
+        pageId: pageId,
       });
 
       toast({
@@ -166,68 +168,81 @@ const _ImageUpload: React.FC<_ImageUploadProps> = ({
     }
   };
 
+  async function useEffectAsyncFunctions() {
+    const hostInfo = await getHostInfo();
+    const pageId = hostInfo.location.split("/").slice(-1)[0].split("-").slice(-1)[0];
+    setPageId(pageId);
+  }
+
+  useEffect(() => {
+    useEffectAsyncFunctions();
+  }, []);
+
   return (
-    <Box
-      onDragEnter={handleDragEnter}
-      onDragOver={(e) => e.preventDefault()}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
-      borderWidth={2}
-      borderColor={dragging ? "blue.500" : "gray.200"}
-      borderStyle="dashed"
-      rounded="md"
-      p={4}
-      mb={4}
-      textAlign="center"
-    >
-      {dragging ? (
-        <Text color="blue.500">Drop the image here</Text>
-      ) : (
-        <>
-          <Text>Drag and drop an image here or click to select one</Text>
-          <Text>{file?.name}</Text>
-        </>
-      )}
-      <Input
-        type="file"
-        accept="image/*"
-        onChange={handleFileChange}
-        className="hidden"
-      />
-      <FormControl isRequired>
-        <FormLabel htmlFor="fileName">File Name:</FormLabel>
-        <Input
-          type="text"
-          id="fileName"
-          value={fileName}
-          onChange={handleFileNameChange}
-          placeholder="Enter a file name"
-        />
-      </FormControl>
-      <Button
-        mt={4}
-        type="submit"
-        colorScheme="teal"
-        onClick={handleUpload}
-        disabled={!file || uploading || fileName.trim() === ""}
+    <div>
+      <div>{`Page ID: ${pageId}` || "No host info yet"}</div>
+      <Box
+        onDragEnter={handleDragEnter}
+        onDragOver={(e) => e.preventDefault()}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        borderWidth={2}
+        borderColor={dragging ? "blue.500" : "gray.200"}
+        borderStyle="dashed"
+        rounded="md"
+        p={4}
+        mb={4}
+        textAlign="center"
       >
-        {uploading ? "Uploading..." : "Upload"}
-      </Button>
-      {uploadError && <Text color="red.500">{uploadError}</Text>}
-      {publicUrl && (
-        <div>
-          <Text color="green.500">Upload successful!</Text>
-          {fileSize && <Text color="green.500">{fileSize}</Text>}
-          {compressedFileSize && (
-            <Text color="green.500">{compressedFileSize}</Text>
-          )}
-          <CopyToClipboard>{publicUrl}</CopyToClipboard>
-        </div>
-      )}
-      {!supabase && (
-        <Text color="red.500 mt-2">Fix Supabase URL and key instead.</Text>
-      )}
-      <ToastContainer />
-    </Box>
+        {dragging ? (
+          <Text color="blue.500">Drop the image here</Text>
+        ) : (
+          <>
+            <Text>Drag and drop an image here or click to select one</Text>
+            <Text>{file?.name}</Text>
+          </>
+        )}
+        <Input
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          className="hidden"
+        />
+        <FormControl isRequired>
+          <FormLabel htmlFor="fileName">File Name:</FormLabel>
+          <Input
+            type="text"
+            id="fileName"
+            value={fileName}
+            onChange={handleFileNameChange}
+            placeholder="Enter a file name"
+          />
+        </FormControl>
+        <Button
+          mt={4}
+          type="submit"
+          colorScheme="teal"
+          onClick={handleUpload}
+          disabled={!file || uploading || fileName.trim() === ""}
+        >
+          {uploading ? "Uploading..." : "Upload"}
+        </Button>
+        {uploadError && <Text color="red.500">{uploadError}</Text>}
+        {publicUrl && (
+          <div>
+            <Text color="green.500">Upload successful!</Text>
+            {fileSize && <Text color="green.500">{fileSize}</Text>}
+            {compressedFileSize && (
+              <Text color="green.500">{compressedFileSize}</Text>
+            )}
+            <CopyToClipboard>{publicUrl}</CopyToClipboard>
+          </div>
+        )}
+        {!supabase && (
+          <Text color="red.500 mt-2">Fix Supabase URL and key instead.</Text>
+        )}
+        <ToastContainer />
+      </Box>
+    </div>
   );
 };
