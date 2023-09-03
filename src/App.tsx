@@ -45,6 +45,9 @@ export default function App() {
             <li className="my-1">
             <Link to={`uploadImage`}>Upload Image</Link>
             </li>
+            <li className="my-1">
+            <Link to={`imageList`}>Image List</Link>
+            </li>
           </ul>
         </nav>
       </div>

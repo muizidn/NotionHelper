@@ -7,6 +7,7 @@ import App from "./App";
 import SupabaseCredential from "./popup/SupabaseCredentials";
 import ImageUpload from "./popup/ImageUpload";
 import { ChakraProvider } from '@chakra-ui/react'
+import ImageList from "./popup/ImageList";
 
 const router = createBrowserRouter([
   {
@@ -22,6 +23,11 @@ const router = createBrowserRouter([
       {
         path: "uploadImage",
         element: <ImageUpload />,
+        errorElement: <ErrorPage />,
+      },
+      {
+        path: "imageList",
+        element: <ImageList />,
         errorElement: <ErrorPage />,
       },
     ],

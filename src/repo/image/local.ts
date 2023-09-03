@@ -19,21 +19,38 @@ class LocalImageRepository {
 
     private async openDatabase(): Promise<IDBPDatabase> {
         const storeName = this.storeName;
-        return openDB(this.dbName, 1, {
-            upgrade(db) {
-                db.createObjectStore(storeName, { keyPath: "id"});
+        return openDB(this.dbName, 2, {
+            upgrade(upgradeDb, oldVersion, newVersion, transaction, event) {
+                switch (oldVersion) {
+                    case 0:
+                        if (!upgradeDb.objectStoreNames.contains(storeName)) {
+                            upgradeDb.createObjectStore(storeName, { keyPath: 'id' });
+                        }
+                    case 1:
+                        const store = transaction.objectStore(storeName)
+                        if (!store.indexNames.contains("byPageId")) {
+                            store.createIndex('byPageId', 'pageId', {});
+                        }
+                    default:
+                        break
+                }
             },
         });
     }
 
-    async fetchImages(pageId: number): Promise<DbImage[]> {
+    async fetchImages(pageId: string | null = null): Promise<DbImage[]> {
         const db = await this.openDatabase();
         const tx = db.transaction(this.storeName, 'readonly');
         const store = tx.objectStore(this.storeName);
-        const index = store.index('pageId');
+        const index = store.index('byPageId');
 
-        return index.getAll(IDBKeyRange.only(pageId));
+        if (pageId === null) {
+            return index.getAll();
+        } else {
+            return index.getAll(IDBKeyRange.only(pageId));
+        }
     }
+
 
     async saveNewImage(image: DbImage): Promise<string> {
         const db = await this.openDatabase();
