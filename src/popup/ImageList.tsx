@@ -12,7 +12,7 @@ import repo, { DbImage } from "../repo/image";
 import getHostInfo from "../getHostInfo";
 
 const ImageList: React.FC = () => {
-  const [filter, setFilter] = useState<string>("ALL");
+  const [filter, setFilter] = useState<string>("1");
   const [searchText, setSearchText] = useState<string>("");
   const [imageList, setImageList] = useState<DbImage[]>([]);
   const [pageId, setPageId] = useState<string>("");
