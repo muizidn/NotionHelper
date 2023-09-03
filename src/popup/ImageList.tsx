@@ -9,32 +9,34 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import repo, { DbImage } from "../repo/image";
+import getHostInfo from "../getHostInfo";
 
 const ImageList: React.FC = () => {
   const [filter, setFilter] = useState<string>("ALL");
   const [searchText, setSearchText] = useState<string>("");
   const [imageList, setImageList] = useState<DbImage[]>([]);
+  const [pageId, setPageId] = useState<string>("");
 
-  async function loadImages() {
-    const images = await repo.fetchImages();
+  async function loadImages(pageId: string | null = null) {
+    const images = await repo.fetchImages(pageId);
     setImageList(images);
   }
 
+  async function getHostInformations() {
+    const hostInfo = await getHostInfo();
+    const pageId = hostInfo.location
+      .split("/")
+      .slice(-1)[0]
+      .split("-")
+      .slice(-1)[0];
+    setPageId(pageId);
+    loadImages(pageId);
+  }
+
   useEffect(() => {
-    loadImages();
+    getHostInformations();
   }, []);
 
-  // Filter images based on selected filter and search text
-  const filteredImages = imageList.filter((image) => {
-    if (filter === "ALL") {
-      return image.name.toLowerCase().includes(searchText.toLowerCase());
-    }
-    return (
-      image.pageId.toString() === filter &&
-      image.name.toLowerCase().includes(searchText.toLowerCase())
-    );
-  });
-  
   return (
     <Box p={4}>
       <Heading as="h1" mb={4}>
@@ -45,7 +47,14 @@ const ImageList: React.FC = () => {
           <Select
             width="200px"
             value={filter}
-            onChange={(e) => setFilter(e.target.value)}
+            onChange={(e) => {
+              if (e.target.value === "ALL") {
+                loadImages();
+              } else {
+                loadImages(pageId);
+              }
+              setFilter(e.target.value);
+            }}
           >
             <option value="ALL">All</option>
             {/* Replace with your actual page IDs */}
@@ -53,6 +62,7 @@ const ImageList: React.FC = () => {
             {/* Add more options if needed */}
           </Select>
         </Box>
+        {filter !== "ALL" && <div> Page ID: {pageId}</div>}
         <Input
           type="text"
           placeholder="Search Images"
@@ -61,7 +71,7 @@ const ImageList: React.FC = () => {
         />
       </VStack>
       <SimpleGrid columns={3} spacing={4} mt={4}>
-        {filteredImages.map((image) => (
+        {imageList.map((image) => (
           <Box key={image.id} borderWidth="1px" borderRadius="lg" p={4}>
             {/* Display image card content here */}
             <Text>{image.name}</Text>
