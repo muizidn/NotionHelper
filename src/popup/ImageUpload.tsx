@@ -3,6 +3,9 @@ import { useState } from "react";
 import { SupabaseClient, createClient } from "@supabase/supabase-js";
 import CopyToClipboard from "./CopyToClipboard";
 import imageCompression from "browser-image-compression";
+import { createStandaloneToast } from "@chakra-ui/toast";
+
+const { ToastContainer, toast } = createStandaloneToast();
 
 const ImageUpload: React.FC = () => {
   const supabaseUrl = localStorage.getItem("supabaseUrl");
@@ -51,7 +54,9 @@ const _ImageUpload: React.FC<_ImageUploadProps> = ({
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [publicUrl, setPublicUrl] = useState<string | null>(null);
   const [fileSize, setFileSize] = useState<string | null>(null);
-  const [compressedFileSize, setCompressedFileSize] = useState<string | null>(null);
+  const [compressedFileSize, setCompressedFileSize] = useState<string | null>(
+    null
+  );
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
@@ -65,16 +70,18 @@ const _ImageUpload: React.FC<_ImageUploadProps> = ({
     setUploading(true);
     setUploadError(null);
     setPublicUrl(null);
-    setFileSize(`File Size ${file.size / 1024} KB`)
+    setFileSize(`File Size ${file.size / 1024} KB`);
 
     const compressedFile = await compressImage(file);
-    if (!compressedFile) { 
-        setUploadError("Compress file failed");
-        setUploading(false);
-        return;
+    if (!compressedFile) {
+      setUploadError("Compress file failed");
+      setUploading(false);
+      return;
     }
 
-    setCompressedFileSize(`Compressed File Size ${compressedFile.size / 1024} KB`)
+    setCompressedFileSize(
+      `Compressed File Size ${compressedFile.size / 1024} KB`
+    );
 
     const { data, error } = await supabase.storage
       .from(supabaseBucket)
@@ -85,6 +92,7 @@ const _ImageUpload: React.FC<_ImageUploadProps> = ({
     } else if (data) {
       const d = supabase.storage.from(supabaseBucket).getPublicUrl(data.path);
       setPublicUrl(d.data.publicUrl);
+      toast({ title: `Sucess upload image to ${supabase}/${supabaseFolder}` })
     }
 
     setUploading(false);
@@ -127,8 +135,10 @@ const _ImageUpload: React.FC<_ImageUploadProps> = ({
           {publicUrl && (
             <div>
               <p className="text-green-500 mt-2">Upload successful!</p>
-              {fileSize && (<p className="text-green-500 mt-2">{ fileSize }</p>)}
-              {compressedFileSize && (<p className="text-green-500 mt-2">{ compressedFileSize }</p>)}
+              {fileSize && <p className="text-green-500 mt-2">{fileSize}</p>}
+              {compressedFileSize && (
+                <p className="text-green-500 mt-2">{compressedFileSize}</p>
+              )}
               <CopyToClipboard>{publicUrl}</CopyToClipboard>
             </div>
           )}
@@ -136,6 +146,7 @@ const _ImageUpload: React.FC<_ImageUploadProps> = ({
       ) : (
         <p className="text-red-500 mt-2">Fix Supabase URL and key instead.</p>
       )}
+      <ToastContainer />
     </>
   );
 };

@@ -6,11 +6,12 @@ import ErrorPage from "./error-page";
 import App from "./App";
 import SupabaseCredential from "./popup/SupabaseCredentials";
 import ImageUpload from "./popup/ImageUpload";
+import { ChakraProvider } from '@chakra-ui/react'
 
 const router = createBrowserRouter([
   {
     path: "/index.html",
-    element: <App/>,
+    element: <App />,
     errorElement: <ErrorPage />,
     children: [
       {
@@ -29,6 +30,8 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <ChakraProvider>
+      <RouterProvider router={router} />
+    </ChakraProvider>
   </React.StrictMode>
 );
