@@ -5,6 +5,8 @@ import CopyToClipboard from "./CopyToClipboard";
 import imageCompression from "browser-image-compression";
 import { createStandaloneToast } from "@chakra-ui/toast";
 import { Box, Text, Button, Input } from "@chakra-ui/react";
+import imageRepo, { DbImage } from "../repo/image";
+import { UUID } from 'uuidjs'
 
 const { ToastContainer, toast } = createStandaloneToast();
 
@@ -13,15 +15,7 @@ const ImageUpload: React.FC = () => {
   const supabaseKey = localStorage.getItem("supabaseKey");
 
   return (
-    <Box
-      w="800px"
-      maxW="md"
-      mx="auto"
-      p={4}
-      bg="red"
-      rounded="lg"
-      shadow="md"
-    >
+    <Box w="800px" maxW="md" mx="auto" p={4} bg="red" rounded="lg" shadow="md">
       <Text fontSize="xl" fontWeight="semibold" mb={4}>
         Image Upload
       </Text>
@@ -94,16 +88,28 @@ const _ImageUpload: React.FC<_ImageUploadProps> = ({
       `Compressed File Size ${compressedFile.size / 1024} KB`
     );
 
+    const fileNameUpdated = `${file.name}-automatic`;
+
     const { data, error } = await supabase.storage
       .from(supabaseBucket)
-      .upload(`${supabaseFolder}/${file.name}-automatic`, compressedFile);
+      .upload(`${supabaseFolder}/${fileNameUpdated}`, compressedFile);
 
     if (error) {
       setUploadError("Error uploading image");
     } else if (data) {
       const d = supabase.storage.from(supabaseBucket).getPublicUrl(data.path);
       setPublicUrl(d.data.publicUrl);
-      toast({ title: `Sucess upload image to ${supabase}/${supabaseFolder}` });
+      const id = await imageRepo.saveNewImage({
+        id: UUID.genV4().toString(),
+        imageUrl: d.data.publicUrl,
+        size: compressedFile.size,
+        name: "image x 2",
+        pageId: "fooz",
+      });
+
+      toast({
+        title: `Sucess upload image to ${supabaseBucket}/${supabaseFolder} with id ${id}`,
+      });
     }
 
     setUploading(false);
@@ -164,8 +170,8 @@ const _ImageUpload: React.FC<_ImageUploadProps> = ({
         <Text color="blue.500">Drop the image here</Text>
       ) : (
         <>
-        <Text>Drag and drop an image here or click to select one</Text>
-        <Text>{ file?.name }</Text>
+          <Text>Drag and drop an image here or click to select one</Text>
+          <Text>{file?.name}</Text>
         </>
       )}
       <Input
