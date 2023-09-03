@@ -7,10 +7,10 @@ const SupabaseCredential: React.FC = () => {
   const [supabaseFolder, setSupabaseFolder] = useState("");
 
   useEffect(() => {
-    const savedSupabaseUrl = localStorage.getItem("supabaseUrl");
-    const savedSupabaseKey = localStorage.getItem("supabaseKey");
-    const savedSupabaseBucket = localStorage.getItem("supabaseBucket");
-    const savedSupabaseFolder = localStorage.getItem("supabaseFolder");
+    const savedSupabaseUrl = import.meta.env.VITE_SUPABASE_URL || localStorage.getItem("supabaseUrl");
+    const savedSupabaseKey = import.meta.env.VITE_SUPABASE_KEY || localStorage.getItem("supabaseKey");
+    const savedSupabaseBucket = import.meta.env.VITE_SUPABASE_BUCKET ||  localStorage.getItem("supabaseBucket");
+    const savedSupabaseFolder = import.meta.env.VITE_SUPABASE_FOLDER ||  localStorage.getItem("supabaseFolder");
 
     if (savedSupabaseUrl) setSupabaseUrl(savedSupabaseUrl);
     if (savedSupabaseKey) setSupabaseKey(savedSupabaseKey);

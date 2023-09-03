@@ -4,6 +4,7 @@ import { SupabaseClient, createClient } from "@supabase/supabase-js";
 import CopyToClipboard from "./CopyToClipboard";
 import imageCompression from "browser-image-compression";
 import { createStandaloneToast } from "@chakra-ui/toast";
+import { Box, Text, Button, Input } from "@chakra-ui/react";
 
 const { ToastContainer, toast } = createStandaloneToast();
 
@@ -12,14 +13,24 @@ const ImageUpload: React.FC = () => {
   const supabaseKey = localStorage.getItem("supabaseKey");
 
   return (
-    <div className="w-[800px] max-w-md mx-auto p-4 bg-white rounded-lg shadow-md">
-      <h2 className="text-xl font-semibold mb-4">Image Upload</h2>
+    <Box
+      w="800px"
+      maxW="md"
+      mx="auto"
+      p={4}
+      bg="white"
+      rounded="lg"
+      shadow="md"
+    >
+      <Text fontSize="xl" fontWeight="semibold" mb={4}>
+        Image Upload
+      </Text>
       {supabaseUrl && supabaseKey ? (
         <_ImageUpload supabaseUrl={supabaseUrl} supabaseKey={supabaseKey} />
       ) : (
-        <p>Should set Supabase credentials</p>
+        <Text>Should set Supabase credentials</Text>
       )}
-    </div>
+    </Box>
   );
 };
 
@@ -92,7 +103,7 @@ const _ImageUpload: React.FC<_ImageUploadProps> = ({
     } else if (data) {
       const d = supabase.storage.from(supabaseBucket).getPublicUrl(data.path);
       setPublicUrl(d.data.publicUrl);
-      toast({ title: `Sucess upload image to ${supabase}/${supabaseFolder}` })
+      toast({ title: `Sucess upload image to ${supabase}/${supabaseFolder}` });
     }
 
     setUploading(false);
@@ -112,41 +123,92 @@ const _ImageUpload: React.FC<_ImageUploadProps> = ({
     }
   }
 
+  const [dragging, setDragging] = useState(false);
+
+  const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setDragging(false);
+
+    const { files } = e.dataTransfer;
+
+    if (files.length > 0) {
+      setFile(files[0]);
+    }
+  };
+
   return (
-    <>
-      {supabase ? (
-        <>
-          <div className="mb-4">
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              className="border p-2"
-            />
-          </div>
-          <button
-            onClick={handleUpload}
-            className="bg-blue-500 text-white px-4 py-2 rounded-md"
-            disabled={!file || uploading}
-          >
-            {uploading ? "Uploading..." : "Upload"}
-          </button>
-          {uploadError && <p className="text-red-500 mt-2">{uploadError}</p>}
-          {publicUrl && (
-            <div>
-              <p className="text-green-500 mt-2">Upload successful!</p>
-              {fileSize && <p className="text-green-500 mt-2">{fileSize}</p>}
-              {compressedFileSize && (
-                <p className="text-green-500 mt-2">{compressedFileSize}</p>
-              )}
-              <CopyToClipboard>{publicUrl}</CopyToClipboard>
-            </div>
-          )}
-        </>
+    <Box
+      onDragEnter={handleDragEnter}
+      onDragOver={(e) => e.preventDefault()}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+      borderWidth={2}
+      borderColor={dragging ? "blue.500" : "gray.200"}
+      borderStyle="dashed"
+      rounded="md"
+      p={4}
+      mb={4}
+      textAlign="center"
+    >
+      {dragging ? (
+        <Text color="blue.500">Drop the image here</Text>
       ) : (
-        <p className="text-red-500 mt-2">Fix Supabase URL and key instead.</p>
+        <>
+        <Text>Drag and drop an image here or click to select one</Text>
+        <Text>{ file?.name }</Text>
+        </>
       )}
-      <ToastContainer />
-    </>
+      <Input
+        type="file"
+        accept="image/*"
+        onChange={handleFileChange}
+        className="hidden"
+      />
+      <>
+        {supabase ? (
+          <>
+            <div className="mb-4">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="border p-2"
+              />
+            </div>
+            <button
+              onClick={handleUpload}
+              className="bg-blue-500 text-white px-4 py-2 rounded-md"
+              disabled={!file || uploading}
+            >
+              {uploading ? "Uploading..." : "Upload"}
+            </button>
+            {uploadError && <p className="text-red-500 mt-2">{uploadError}</p>}
+            {publicUrl && (
+              <div>
+                <p className="text-green-500 mt-2">Upload successful!</p>
+                {fileSize && <p className="text-green-500 mt-2">{fileSize}</p>}
+                {compressedFileSize && (
+                  <p className="text-green-500 mt-2">{compressedFileSize}</p>
+                )}
+                <CopyToClipboard>{publicUrl}</CopyToClipboard>
+              </div>
+            )}
+          </>
+        ) : (
+          <p className="text-red-500 mt-2">Fix Supabase URL and key instead.</p>
+        )}
+        <ToastContainer />
+      </>
+    </Box>
   );
 };
